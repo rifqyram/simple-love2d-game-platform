@@ -1,0 +1,20 @@
+# Ignore file sistem (macOS, Windows)
+.DS_Store
+Thumbs.db
+
+# Ignore Love2D build files
+*.love
+
+# Ignore compiled Lua files
+*.luac
+
+# Ignore logs & temporary files
+*.log
+*.bak
+*.tmp
+
+# Ignore VSCode settings (jika pakai VSCode)
+.vscode/
+
+# Ignore dependencies (jika pakai luar love2d)
+deps/
