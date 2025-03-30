@@ -11,12 +11,14 @@ function Player:new(name, x, y, width, height)
         height = height,
         vy = 0,
         gravity = 500,
-        moveSpeed = 400,
+        moveSpeed = 200,
         jumpForce = -300,
         isOnGround = false,
         direction = 'right',
         coyoteTime = 0.15,
-        coyoteTimer = 0
+        coyoteTimer = 0,
+        attackBox = nil,
+        isAttacking = false
     }
     setmetatable(obj, self)
     self.__index = self
@@ -121,6 +123,20 @@ function Player:handleHorizontalCollision(obj)
     if self.direction == 'right' and self:isHittingSideOf(obj, 'left') then
         self.x = obj.x - self.width
     end
+end
+
+function Player:attack()
+    self.isAttacking = true
+    self.attackTimer = 0.15
+
+    local hitboxX = self.x + (self.direction == 'right' and self.width or -20)
+    local hitboxY = self.y
+    self.attackBox = {
+        x = hitboxX,
+        y = hitboxY,
+        width = 20,
+        height = self.height
+    }
 end
 
 function Player:reset()
