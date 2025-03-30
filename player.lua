@@ -12,6 +12,7 @@ function Player:new(name, x, y, width, height)
         moveSpeed = 400,
         jumpForce = -300,
         isOnGround = false,
+        direction = 'right'
     }
     setmetatable(obj, self)
     self.__index = self
@@ -29,18 +30,20 @@ function Player:jump()
 end
 
 function Player:init(dt)
+    self.isOnGround = false
     self.prevY = self.y
     self.vy = self.vy + self.gravity * dt
     self.y = self.y + self.vy * dt
-    self.isOnGround = false
 end
 
 function Player:moveLeft(dt)
     self.x = self.x - self.moveSpeed * dt
+    self.direction = 'left'
 end
 
 function Player:moveRight(dt)
     self.x = self.x + self.moveSpeed * dt
+    self.direction = 'right'
 end
 
 function Player:isLandingOn(obj)
@@ -59,8 +62,10 @@ function Player:isCollide(obj)
 end
 
 function Player:isHittingSideOf(obj, direction)
+    local tolerance = 5
+
     if direction == 'left' then
-        return self.x < obj.x and
+        return self.x < obj.x + tolerance and
             self.x + self.width > obj.x and
             self.y + self.height > obj.y and
             self.y < obj.y + obj.height
@@ -71,6 +76,11 @@ function Player:isHittingSideOf(obj, direction)
             self.y < obj.y + obj.height
     end
     return false
+end
+
+function Player:reset()
+    self.x = 100
+    self.y = 100
 end
 
 return Player
