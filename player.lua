@@ -12,7 +12,9 @@ function Player:new(name, x, y, width, height)
         moveSpeed = 400,
         jumpForce = -300,
         isOnGround = false,
-        direction = 'right'
+        direction = 'right',
+        coyoteTime = 0.15,
+        coyoteTimer = 0
     }
     setmetatable(obj, self)
     self.__index = self
@@ -21,7 +23,7 @@ end
 
 function Player:draw()
     love.graphics.print(self.name, self.x, self.y - 20)
-    love.graphics.rectangle('fill', self.x, self.y, self.width, self.height)
+    love.graphics.rectangle('fill', math.floor(self.x), math.floor(self.y), self.width, self.height)
 end
 
 function Player:jump()
@@ -61,6 +63,14 @@ function Player:isCollide(obj)
         self.x < obj.x + obj.width
 end
 
+function Player:isHittingTopOf(obj)
+    return self.vy < 0 and
+        self.prevY >= obj.y + obj.height and
+        self.y <= obj.y + obj.height and
+        self.x + self.width > obj.x and
+        self.x < obj.x + obj.width
+end
+
 function Player:isHittingSideOf(obj, direction)
     local tolerance = 5
 
@@ -76,6 +86,17 @@ function Player:isHittingSideOf(obj, direction)
             self.y < obj.y + obj.height
     end
     return false
+end
+
+function Player:handleVerticalCollision(obj)
+    if self:isLandingOn(obj) then
+        self.vy = 0
+        self.y = obj.y - self.height
+        self.isOnGround = true
+    elseif self:isHittingTopOf(obj) then
+        self.vy = 0
+        self.y = obj.y + obj.height
+    end
 end
 
 function Player:reset()
