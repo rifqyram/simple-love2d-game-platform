@@ -14,19 +14,26 @@ SCREEN_WIDTH = #LevelMap[1] * TILE_ZIZE
 SCREEN_HEIGHT = #LevelMap * TILE_ZIZE
 
 function love.load()
-    Player = player:new('Budi', 10, 0, 32, 32)
+    local playerSpawnX = 0
+    local playerSpawnY = 0
 
     Platforms = {}
     for rowIndex, row in ipairs(LevelMap) do
         for col = 1, #row do
             local symbol = row:sub(col, col)
+            local x = (col - 1) * TILE_ZIZE
+            local y = (rowIndex - 1) * TILE_ZIZE
+
             if symbol == '#' then
-                local x = (col - 1) * TILE_ZIZE
-                local y = (rowIndex - 1) * TILE_ZIZE
                 table.insert(Platforms, platform:new(x, y, TILE_ZIZE, TILE_ZIZE))
+            elseif symbol == 'P' then
+                playerSpawnX = x
+                playerSpawnY = y
             end
         end
     end
+
+    Player = player:new('Budi', playerSpawnX, playerSpawnY, 32, 32)
 end
 
 function love.update(dt)
@@ -42,25 +49,10 @@ function love.update(dt)
 
     for _, p in ipairs(Platforms) do
         Player:handleVerticalCollision(p)
-
-        if Player.direction == 'left' and Player:isHittingSideOf(p, 'right') then
-            Player.x = p.x + p.width
-        end
-
-        if Player.direction == 'right' and Player:isHittingSideOf(p, 'left') then
-            Player.x = p.x - Player.width
-        end
+        Player:handleHorizontalCollision(p)
     end
 
-    if Player.isOnGround then
-        Player.coyoteTimer = Player.coyoteTime
-    else
-        Player.coyoteTimer = Player.coyoteTimer - dt
-    end
-
-    if Player.coyoteTimer < 0 then
-        Player.coyoteTimer = 0
-    end
+    Player:handleCoyoteJump(dt)
 end
 
 function love.keypressed(key)
@@ -70,11 +62,6 @@ function love.keypressed(key)
 
     if key == 'r' then
         Player:reset()
-    end
-
-    if key == 'f11' then
-        local isFullscreen = love.window.getFullscreen()
-        love.window.setFullscreen(not isFullscreen, "desktop")
     end
 end
 

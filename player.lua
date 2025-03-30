@@ -3,6 +3,8 @@ Player = {}
 function Player:new(name, x, y, width, height)
     local obj = {
         name = name,
+        spawnX = x,
+        spawnY = y,
         x = x,
         y = y,
         width = width,
@@ -26,16 +28,28 @@ function Player:draw()
     love.graphics.rectangle('fill', math.floor(self.x), math.floor(self.y), self.width, self.height)
 end
 
-function Player:jump()
-    self.vy = self.jumpForce
-    self.isOnGround = false
-end
-
 function Player:init(dt)
     self.isOnGround = false
     self.prevY = self.y
     self.vy = self.vy + self.gravity * dt
     self.y = self.y + self.vy * dt
+end
+
+function Player:jump()
+    self.vy = self.jumpForce
+    self.isOnGround = false
+end
+
+function Player:handleCoyoteJump(dt)
+    if self.isOnGround then
+        self.coyoteTimer = self.coyoteTime
+    else
+        self.coyoteTimer = self.coyoteTimer - dt
+    end
+
+    if self.coyoteTimer < 0 then
+        self.coyoteTimer = 0
+    end
 end
 
 function Player:moveLeft(dt)
@@ -99,9 +113,22 @@ function Player:handleVerticalCollision(obj)
     end
 end
 
+function Player:handleHorizontalCollision(obj)
+    if self.direction == 'left' and self:isHittingSideOf(obj, 'right') then
+        self.x = obj.x + obj.width
+    end
+
+    if self.direction == 'right' and self:isHittingSideOf(obj, 'left') then
+        self.x = obj.x - self.width
+    end
+end
+
 function Player:reset()
-    self.x = 100
-    self.y = 100
+    self.x = self.spawnX
+    self.y = self.spawnY
+    self.vy = 0
+    self.isOnGround = false
+    self.coyoteTimer = 0
 end
 
 return Player
